@@ -25,9 +25,9 @@ try:
     import firebase_admin
     from firebase_admin import credentials, firestore
     
-    firebase_cred = credentials.Certificate('firebase-service-account.json')
-    firebase_admin.initialize_app(firebase_cred)
-    firebase_db = firestore.client()
+    # Firebase temporarily disabled for Render deployment
+    firebase_db = None
+    print("Firebase disabled for deployment")  
     print("Firebase Firestore initialized successfully")
 except ImportError as ie:
     print(f"Firebase import error: {ie}")

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FARM&CO: Disease Detection For Livestock Animasl & Pets With Veterinary Care System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Add translations.js before script.js -->
+    <script src="{{ url_for('static', filename='translations.js') }}"></script>
+</head>
+<body>
+    <div class="language-settings">
+        <button class="settings-btn" onclick="toggleSettings()">
+            <span class="settings-icon">⚙️</span>
+            <span>Settings</span>
+        </button>
+        <div class="settings-menu" id="settingsMenu">
+            <div class="menu-item" onclick="toggleLanguageOptions()">
+                <span class="lang-icon">🌐</span>
+                <span>Language</span>
+                <span class="current-lang">EN</span>
+            </div>
+            <div class="menu-item" onclick="toggleMobileFormat()">
+                <span class="mobile-icon">📱</span>
+                <span class="mode-text">Desktop Mode</span>
+            </div>
+            <a href="{{ url_for('admin_dashboard') }}" class="menu-item admin-menu-link">
+                <span class="admin-icon">🛡️</span>
+                <span>Admin Dashboard</span>
+            </a>
+            <!-- Language submenu -->
+            <div class="language-options" id="languageMenu">
+                <div class="submenu-item" onclick="changeLanguage('en')">
+                    <span class="lang-flag">🇬🇧</span>
+                    English
+                </div>
+                <div class="submenu-item" onclick="changeLanguage('ta')">
+                    <span class="lang-flag">🇮🇳</span>
+                    தமிழ்
+                </div>
+                <div class="submenu-item" onclick="changeLanguage('hi')">
+                    <span class="lang-flag">🇮🇳</span>
+                    हिन्दी
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="insurance-corner">
+        <a href="{{ url_for('insurance') }}" class="insurance-btn">
+            <span class="insurance-btn-icon">🛡️</span>
+            <span>Insurance Scheme</span>
+        </a>
+    </div>
+    <div class="hero-section">
+        <video autoplay muted loop playsinline class="hero-video">
+            <source src="{{ url_for('static', filename='videos/hero-bg.mp4') }}" type="video/mp4">
+        </video>
+        <div class="hero-content">
+            <h1 id="mainTitle">FARM&CO: Disease Detection For Livestock Animals & Pets With Veterinary Care System</h1>
+            <p id="mainSubtitle">Your Smart Animal Doctor – Anytime, Anywhere</p>
+            <p id="mainDescription" class="subtitle">Scan your cow or dog for skin problems and get expert help in minutes.</p>
+            <div class="cta-buttons">
+                <a href="{{ url_for('cow_detection') }}" class="cta-button primary">Detect Cow Disease</a>
+                <a href="{{ url_for('dog_detection') }}" class="cta-button secondary">Detect Dog Disease</a>
+            </div>
+        </div>
+    </div>
+    <div class="news-ticker">
+        <div class="ticker-wrapper">
+            <div class="ticker-content">
+                <a href="https://www.thehindu.com/news/cities/chennai/mdma-tablets-lsd-stamps-and-gold-seized-at-chennai/article66540510.ece" class="ticker-item" target="_blank">
+                    🚨 Tamil Nadu: Lumpy skin disease affects over 74,000 cattle - Latest Updates
+                </a>
+                <a href="https://www.pib.gov.in/PressReleasePage.aspx?PRID=1887700" class="ticker-item" target="_blank">
+                    💉 Veterinary University develops indigenous vaccine against LSD
+                </a>
+                <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10535115/" class="ticker-item" target="_blank">
+                    📊 LSD: 89% increase in cattle cases in 2023 - Government Report
+                </a>
+                <a href="https://onlinelibrary.wiley.com/doi/10.1155/2024/1343156" class="ticker-item" target="_blank">
+                    🏥 TN Assembly: Latest statistics on LSD infection rates
+                </a>
+                <a href="https://supertails.com/blogs/healthcare/monsoon-skin-issues-in-dogs-how-to-keep-your-pets-healthy?srsltid=AfmBOoo0oyNCtxHud8BUUM7pNBAWAMxNpN2j_WwPzNlzB4OPcY3Dhmnm" class="ticker-item" target="_blank">
+                    🌧️ How to identify and prevent pet skin diseases during monsoon
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="mini-chat">
+        <div class="chat-header" onclick="toggleChat()">
+            <span class="chat-icon">🤖</span>
+            <span>AI Assistant</span>
+            <span class="minimize-btn">_</span>
+        </div>
+        <div class="chat-body" id="chatBody">
+            <div class="chat-messages" id="chatMessages">
+                <div class="message bot">
+                    Hello! I can help you with disease detection and vet appointments. What would you like to know?
+                </div>
+            </div>
+            <div class="chat-input">
+                <input type="text" id="userInput" placeholder="Type your question..." onkeypress="handleKeyPress(event)">
+                <button onclick="sendMessage()">
+                    <span>➤</span>
+                </button>
+                <button id="micBtn" type="button" title="Speak" style="margin-left:8px;">
+                    <span>🎤</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="vet-section">
+        <h2 class="section-title">
+            📋 Book a Veterinary Appointment
+        </h2>
+        <p>Connect with experienced veterinarians for professional care</p>
+        <div class="action-buttons">
+            <a href="{{ url_for('vet_appointment') }}" class="vet-cta">
+                Book Appointment →
+            </a>
+        </div>
+    </div>
+
+    <!-- Health Analytics Section -->
+    <div class="analytics-section">
+        <h2 class="section-title">
+            📊 Health Analytics Feature
+        </h2>
+        <p class="section-subtitle">Track growth, monitor health metrics, and get personalized care recommendations</p>
+        <div class="action-buttons">
+            <a href="{{ url_for('health_analytics') }}" class="analytics-cta">
+                <span class="analytics-icon">📈</span> Health Analytics
+            </a>
+        </div>
+    </div>
+
+    <!-- Video Section -->
+    <div class="video-section">
+        <h2 class="section-title">Educational Videos</h2>
+        <div class="video-container">
+            <div class="video-card">
+                <a href="https://youtu.be/czvZyBIv_DQ?si=g-VtY664xTDV4GXl" target="_blank" class="video-link">
+                    <div class="video-thumbnail">
+                        <img src="https://img.youtube.com/vi/czvZyBIv_DQ/hqdefault.jpg"
+                         alt="Cow Disease Prevention">
+                        <div class="play-button">▶</div>
+                    </div>
+                    <h3>How to Prevent Common Cow Diseases</h3>
+                </a>
+            </div>
+            <div class="video-card">
+                <a href="https://youtu.be/sptKu6M8Hi4?si=GI2qCBI_EdNgzcdx" target="_blank" class="video-link">
+                    <div class="video-thumbnail">
+                        <img src="https://img.youtube.com/vi/sptKu6M8Hi4/hqdefault.jpg"
+                         alt="Dog Skin Care">
+                        <div class="play-button">▶</div>
+                    </div>
+                    <h3>Essential Dog Skin Care Tips</h3>
+                </a>
+            </div>
+            <div class="video-card">
+                <a href="https://youtu.be/0zyNzDtBCfI?si=_YvR74InhEZhItx4" target="_blank" class="video-link">
+                    <div class="video-thumbnail">
+                        <img src="https://img.youtube.com/vi/0zyNzDtBCfI/hqdefault.jpg"
+                        alt="Animal Health Guide">
+                        <div class="play-button">▶</div>
+                    </div>
+                    <h3>Complete Guide to Animal Health</h3>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- How to Use Section -->
+    <div class="how-to-use-section">
+        <!-- Add background video -->
+        <video autoplay muted loop playsinline class="how-to-use-bg-video">
+            <source src="{{ url_for('static', filename='videos/how-to-use-bg.mp4') }}" type="video/mp4">
+        </video>
+        
+        <div class="how-to-use-content">
+            <h2 class="section-title">How to Use VetCare AI</h2>
+            <p class="section-subtitle">Your guide to seamless animal healthcare</p>
+            
+            <div class="steps-container">
+                <div class="step-card" data-aos="fade-up" data-aos-delay="100">
+                    <div class="step-icon">📱</div>
+                    <div class="step-number">1</div>
+                    <h3>Capture or Upload</h3>
+                    <p>Take a clear photo of your animal's skin condition using your camera or upload an existing image</p>
+                    <div class="step-features">
+                        <span>✓ HD Camera Support</span>
+                        <span>✓ Quick Upload</span>
+                        <span>✓ Image Guidelines</span>
+                    </div>
+                </div>
+
+                <div class="step-card" data-aos="fade-up" data-aos-delay="200">
+                    <div class="step-icon">🔍</div>
+                    <div class="step-number">2</div>
+                    <h3>AI Analysis</h3>
+                    <p>Our advanced AI system instantly analyzes the image to detect potential skin diseases</p>
+                    <div class="step-features">
+                        <span>✓ Real-time Processing</span>
+                        <span>✓ High Accuracy</span>
+                        <span>✓ Multiple Disease Detection</span>
+                    </div>
+                </div>
+
+                <div class="step-card" data-aos="fade-up" data-aos-delay="300">
+                    <div class="step-icon">📋</div>
+                    <div class="step-number">3</div>
+                    <h3>Get Detailed Results</h3>
+                    <p>Receive comprehensive analysis including disease identification and confidence score</p>
+                    <div class="step-features">
+                        <span>✓ Detailed Reports</span>
+                        <span>✓ Care Instructions</span>
+                        <span>✓ PDF Download</span>
+                    </div>
+                </div>
+
+                <div class="step-card" data-aos="fade-up" data-aos-delay="400">
+                    <div class="step-icon">👨‍⚕️</div>
+                    <div class="step-number">4</div>
+                    <h3>Professional Care</h3>
+                    <p>Connect with experienced veterinarians and book appointments instantly</p>
+                    <div class="step-features">
+                        <span>✓ Quick Booking</span>
+                        <span>✓ Expert Consultation</span>
+                        <span>✓ Follow-up Care</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <!-- Add to cow_detection.html, dog_detection.html, health_analytics.html, and vet_appointment.html -->
+    <script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Check saved view mode on load
+    const savedMode = localStorage.getItem('viewMode');
+    if (savedMode === 'mobile') {
+        document.body.classList.add('mobile-format');
+    }
+    
+    // Listen for view mode changes
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'viewMode') {
+            if (e.newValue === 'mobile') {
+                document.body.classList.add('mobile-format');
+            } else {
+                document.body.classList.remove('mobile-format');
+            }
+        }
+    });
+});
+</script>
+</body>
+</html>

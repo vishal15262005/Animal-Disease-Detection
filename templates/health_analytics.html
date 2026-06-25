@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Health Analytics - VetCare AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="analytics-page">
+        <!-- Add background video -->
+        <video autoplay muted loop playsinline class="analytics-bg-video">
+            <source src="{{ url_for('static', filename='videos/analytics-bg.mp4') }}" type="video/mp4">
+        </video>
+        
+        <div class="analytics-container">
+            <h1 class="page-title">Health Analytics</h1>
+
+            <!-- Admin Dashboard Button -->
+            <div style="text-align: center; margin-bottom: 20px;">
+                <a href="{{ url_for('admin_dashboard') }}" style="
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 8px;
+                    padding: 12px 28px;
+                    background: linear-gradient(135deg, #667eea, #764ba2);
+                    color: white;
+                    text-decoration: none;
+                    border-radius: 12px;
+                    font-family: 'Poppins', sans-serif;
+                    font-weight: 600;
+                    font-size: 0.95rem;
+                    transition: all 0.3s;
+                    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+                " onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(102,126,234,0.5)'"
+                   onmouseout="this.style.transform='';this.style.boxShadow='0 4px 15px rgba(102,126,234,0.4)'">
+                    🛡️ Admin Dashboard
+                </a>
+            </div>
+
+            <!-- User Input Section -->
+            <div class="input-section">
+                <h2>Enter Animal Details</h2>
+                <form id="analyticsForm" class="analytics-form">
+                    <div class="form-group">
+                        <input type="text" id="animalId" placeholder="Cow ID / Name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <input type="number" id="ageMonths" placeholder="Age in Months" required min="1" max="240">
+                    </div>
+                    
+                    <div class="form-group">
+                        <select id="milkingStatus" required>
+                            <option value="">Select Milking Status</option>
+                            <option value="yes">Yes</option>
+                            <option value="no">No</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <input type="number" id="weight" placeholder="Weight (kg) - Optional">
+                    </div>
+                    
+                    <div class="form-group">
+                        <select id="feedingPattern" required>
+                            <option value="">Select Feeding Pattern</option>
+                            <option value="organic">Organic</option>
+                            <option value="mixed">Mixed</option>
+                            <option value="commercial">Commercial</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="analyze-btn">Analyze</button>
+                </form>
+            </div>
+
+            <!-- Disease Statistics & Recovery Rates Carousel -->
+            <div class="stats-carousel">
+                <h2>📊 Disease Statistics & Recovery Rates</h2>
+                <div class="carousel-container">
+                    <button class="carousel-btn prev">❮</button>
+                    <div class="carousel-track">
+                        <!-- COW DISEASE CARDS -->
+                        
+                        <!-- LSD Card -->
+                        <div class="stat-card cow">
+                            <h3>🐄 Lumpy Skin Disease (LSD)</h3>
+                            <div class="stat-item">
+                                <span class="stat-label">✅ Recovery Rate:</span>
+                                <span class="stat-value">87%</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">⏱️ Avg. Treatment Time:</span>
+                                <span class="stat-value">5 days</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">🔄 Cases/Month:</span>
+                                <span class="stat-value">12</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">🌡️ Detection Accuracy:</span>
+                                <span class="stat-value">89.8%</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">⚠️ Severity Level:</span>
+                                <span class="stat-badge severity-high">High</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">💊 Common Treatment:</span>
+                                <span class="stat-treatment">Antibiotics</span>
+                            </div>
+                        </div>
+
+                        <!-- FMD Card -->
+                        <div class="stat-card cow">
+                            <h3>🐄 Foot & Mouth Disease (FMD)</h3>
+                            <div class="stat-item">
+                                <span class="stat-label">✅ Recovery Rate:</span>
+                                <span class="stat-value">82%</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">⏱️ Avg. Treatment Time:</span>
+                                <span class="stat-value">6-8 days</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">🔄 Cases/Month:</span>
+                                <span class="stat-value">9</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">🌡️ Detection Accuracy:</span>
+                                <span class="stat-value">85.2%</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">⚠️ Severity Level:</span>
+                                <span class="stat-badge severity-high">High</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">💊 Common Treatment:</span>
+                                <span class="stat-treatment">Antivirals</span>
+                            </div>
+                        </div>
+
+                        <!-- Matsis Card -->
+                        <div class="stat-card cow">
+                            <h3>🐄 Mastitis (Udder Infection)</h3>
+                            <div class="stat-item">
+                                <span class="stat-label">✅ Recovery Rate:</span>
+                                <span class="stat-value">78%</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">⏱️ Avg. Treatment Time:</span>
+                                <span class="stat-value">4 days</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">🔄 Cases/Month:</span>
+                                <span class="stat-value">6</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">🌡️ Detection Accuracy:</span>
+                                <span class="stat-value">91.2%</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">⚠️ Severity Level:</span>
+                                <span class="stat-badge severity-medium">Medium</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">💊 Common Treatment:</span>
+                                <span class="stat-treatment">Antibiotics</span>
+                            </div>
+                        </div>
+
+                        <!-- Plant Poisoning Card -->
+                        <div class="stat-card cow">
+                            <h3>🐄 Plant Poisoning</h3>
+                            <div class="stat-item">
+                                <span class="stat-label">✅ Recovery Rate:</span>
+                                <span class="stat-value">75%</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">⏱️ Avg. Treatment Time:</span>
+                                <span class="stat-value">3-5 days</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">🔄 Cases/Month:</span>
+                                <span class="stat-value">3</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">🌡️ Detection Accuracy:</span>
+                                <span class="stat-value">88.5%</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">⚠️ Severity Level:</span>
+                                <span class="stat-badge severity-medium">Medium</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">💊 Common Treatment:</span>
+                                <span class="stat-treatment">Antitoxins</span>
+                            </div>
+                        </div>
+
+                        <!-- DOG DISEASE CARDS -->
+
+                        <!-- Fungal Infection Card -->
+                        <div class="stat-card dog">
+                            <h3>🐕 Fungal Infection</h3>
+                            <div class="stat-item">
+                                <span class="stat-label">✅ Recovery Rate:</span>
+                                <span class="stat-value">91%</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">⏱️ Avg. Treatment Time:</span>
+                                <span class="stat-value">7 days</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">🔄 Cases/Month:</span>
+                                <span class="stat-value">14</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">🌡️ Detection Accuracy:</span>
+                                <span class="stat-value">88.7%</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">⚠️ Severity Level:</span>
+                                <span class="stat-badge severity-medium">Medium</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">💊 Common Treatment:</span>
+                                <span class="stat-treatment">Antifungals</span>
+                            </div>
+                        </div>
+
+                        <!-- Dermatitis Card -->
+                        <div class="stat-card dog">
+                            <h3>🐕 Dermatitis (Skin Inflammation)</h3>
+                            <div class="stat-item">
+                                <span class="stat-label">✅ Recovery Rate:</span>
+                                <span class="stat-value">85%</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">⏱️ Avg. Treatment Time:</span>
+                                <span class="stat-value">5 days</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">🔄 Cases/Month:</span>
+                                <span class="stat-value">16</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">🌡️ Detection Accuracy:</span>
+                                <span class="stat-value">87.3%</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">⚠️ Severity Level:</span>
+                                <span class="stat-badge severity-medium">Medium</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">💊 Common Treatment:</span>
+                                <span class="stat-treatment">Steroids</span>
+                            </div>
+                        </div>
+
+                        <!-- Allergy Card -->
+                        <div class="stat-card dog">
+                            <h3>🐕 Hypersensitivity Allergy</h3>
+                            <div class="stat-item">
+                                <span class="stat-label">✅ Recovery Rate:</span>
+                                <span class="stat-value">88%</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">⏱️ Avg. Treatment Time:</span>
+                                <span class="stat-value">4-6 days</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">🔄 Cases/Month:</span>
+                                <span class="stat-value">11</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">🌡️ Detection Accuracy:</span>
+                                <span class="stat-value">87.5%</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">⚠️ Severity Level:</span>
+                                <span class="stat-badge severity-low">Low</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">💊 Common Treatment:</span>
+                                <span class="stat-treatment">Antihistamines</span>
+                            </div>
+                        </div>
+
+                        <!-- Mange Card -->
+                        <div class="stat-card dog">
+                            <h3>🐕 Mange (Parasitic)</h3>
+                            <div class="stat-item">
+                                <span class="stat-label">✅ Recovery Rate:</span>
+                                <span class="stat-value">92%</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">⏱️ Avg. Treatment Time:</span>
+                                <span class="stat-value">8 days</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">🔄 Cases/Month:</span>
+                                <span class="stat-value">8</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">🌡️ Detection Accuracy:</span>
+                                <span class="stat-value">89.3%</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">⚠️ Severity Level:</span>
+                                <span class="stat-badge severity-medium">Medium</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">💊 Common Treatment:</span>
+                                <span class="stat-treatment">Acaricides</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="carousel-btn next">❯</button>
+                </div>
+            </div>
+
+            <!-- Results Section (Initially Hidden) -->
+            <div id="resultsSection" class="results-section hidden">
+                
+                <!-- 1️⃣ HERO CARD: Overall Health Score -->
+                <div class="hero-card score-card">
+                    <div class="card-header">
+                        <h3>✅ Overall Health Score</h3>
+                        <span class="card-icon">🎯</span>
+                    </div>
+                    <div class="score-indicator">
+                        <!-- Circular Progress Ring -->
+                        <div class="circular-progress">
+                            <svg viewBox="0 0 100 100" class="progress-ring">
+                                <circle cx="50" cy="50" r="45" class="progress-ring-circle-bg"></circle>
+                                <circle cx="50" cy="50" r="45" class="progress-ring-circle" id="progressCircle"></circle>
+                            </svg>
+                            <div class="progress-center">
+                                <div id="scoreValue" class="score-value">--</div>
+                                <div id="scoreStatus" class="score-status">--</div>
+                            </div>
+                        </div>
+                        <div class="score-breakdown">
+                            <p class="score-comparison">Compared to age-based ideal weight</p>
+                            <p id="scorePercentile" class="score-percentile">--</p>
+                        </div>
+                    </div>
+                    <div class="score-legend">
+                        <div class="legend-item excellent">
+                            <span class="legend-dot"></span>
+                            <span>80–100%: Excellent Growth</span>
+                        </div>
+                        <div class="legend-item moderate">
+                            <span class="legend-dot"></span>
+                            <span>60–79%: Moderate Growth</span>
+                        </div>
+                        <div class="legend-item needs-attention">
+                            <span class="legend-dot"></span>
+                            <span>&lt;60%: Needs Attention</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2️⃣ Growth Trend Graph with Enhanced Visuals -->
+                <div class="graph-card">
+                    <div class="card-header">
+                        <h3>📈 Growth Trend Analysis</h3>
+                        <span class="card-icon">📊</span>
+                    </div>
+                    <div class="graph-container">
+                        <canvas id="growthChart"></canvas>
+                        <div class="chart-tooltip" id="chartTooltip" style="display: none;">
+                            <div class="tooltip-month">Month: <span id="tooltipMonth">--</span></div>
+                            <div class="tooltip-weight">Weight: <span id="tooltipWeight">--</span> kg</div>
+                            <div class="tooltip-range">Ideal Range: <span id="tooltipRange">--</span> kg</div>
+                        </div>
+                    </div>
+                    <div class="chart-legend">
+                        <div class="legend-item">
+                            <span class="legend-dot" style="background: #4CAF50;"></span>
+                            <span>🟢 Ideal Growth Path</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-dot" style="background: #2196F3;"></span>
+                            <span>🔵 Actual Weight</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-dot" style="background: rgba(76, 175, 80, 0.15); border: 1px solid #4CAF50;"></span>
+                            <span>🟢 Healthy Band</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3️⃣ Smart Growth Prediction (AI Insight) -->
+                <div class="prediction-card">
+                    <div class="card-header">
+                        <h3>🎯 AI Growth Forecast</h3>
+                        <span class="card-icon">🤖</span>
+                    </div>
+                    <div class="forecast-container">
+                        <div class="forecast-timeline">
+                            <div class="timeline-item current">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-content">
+                                    <h4>Today</h4>
+                                    <p id="currentWeightDisplay">-- kg</p>
+                                </div>
+                            </div>
+                            <div class="timeline-item future">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-content">
+                                    <h4>At 18 Months</h4>
+                                    <p id="predictedWeightDisplay">-- kg</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="forecast-insight" id="forecastInsight">
+                            <!-- Generated dynamically -->
+                        </div>
+                    </div>
+                    <div class="forecast-note">
+                        📋 Predictions based on age, weight history & standard livestock growth models
+                    </div>
+                </div>
+
+                <!-- 4️⃣ Smart Health Recommendations (Action Cards) -->
+                <div class="recommendations-card">
+                    <div class="card-header">
+                        <h3>💡 Smart Recommendations</h3>
+                        <span class="card-icon">✨</span>
+                    </div>
+                    <div class="recommendations-grid" id="recommendationsGrid">
+                        <!-- Generated dynamically -->
+                    </div>
+                </div>
+
+                <!-- 5️⃣ Call-to-Action Section -->
+                <div class="action-section">
+                    <h3>Next Steps</h3>
+                    <div class="action-buttons-grid">
+                        <button class="action-cta download-cta" onclick="downloadHealthReport()">
+                            <span class="action-icon">📥</span>
+                            <span class="action-text">Download Health Report</span>
+                        </button>
+                        <button class="action-cta vet-cta" onclick="window.location.href='{{ url_for('vet_appointment') }}'">
+                            <span class="action-icon">🏥</span>
+                            <span class="action-text">Book Vet Consultation</span>
+                        </button>
+                        <button class="action-cta track-cta" onclick="resetForm()">
+                            <span class="action-icon">📊</span>
+                            <span class="action-text">Track Next Month</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.0/jspdf.umd.min.js"></script>
+    <script src="https://chart.js/dist/chart.min.js"></script>
+    <script src="{{ url_for('static', filename='analytics.js') }}"></script>
+
+    <script>
+        // Enhanced Analytics Functions
+        function analyzeHealth() {
+            try {
+                const animalId = document.getElementById('animalId').value;
+                const age = parseInt(document.getElementById('ageMonths').value);
+                const milkingStatus = document.getElementById('milkingStatus').value;
+                const weight = parseFloat(document.getElementById('weight').value) || calculateEstimatedWeight(age);
+                const feedingPattern = document.getElementById('feedingPattern').value;
+
+                if (!animalId || !age || !milkingStatus || !feedingPattern) {
+                    alert('Please fill in all required fields');
+                    return;
+                }
+
+                const growthRate = calculateGrowthRate(age, weight, feedingPattern);
+                
+                updateHeroCard(growthRate, age, weight);
+                updateGrowthChart(age, weight);
+                updateForecast(age, weight);
+                updateRecommendations(age, milkingStatus, growthRate, weight);
+                
+                const resultsSection = document.getElementById('resultsSection');
+                resultsSection.classList.remove('hidden');
+                setTimeout(() => resultsSection.classList.add('show'), 100);
+
+            } catch (error) {
+                console.error('Error during analysis:', error);
+            }
+        }
+
+        function updateHeroCard(score, age, weight) {
+            const scoreValue = document.getElementById('scoreValue');
+            const scoreStatus = document.getElementById('scoreStatus');
+            const scorePercentile = document.getElementById('scorePercentile');
+            const progressCircle = document.getElementById('progressCircle');
+            
+            const circumference = 2 * Math.PI * 45;
+            const offset = circumference - (score / 100) * circumference;
+            
+            scoreValue.textContent = `${Math.round(score)}%`;
+            scorePercentile.textContent = `Top ${Math.round(100 - score)}% of growth range`;
+            progressCircle.style.strokeDashoffset = offset;
+            
+            let statusText = '';
+            let statusClass = '';
+            if (score >= 80) {
+                statusText = 'Excellent';
+                statusClass = 'excellent';
+                scoreValue.style.color = '#1b5e20';
+                progressCircle.classList.add('excellent');
+            } else if (score >= 60) {
+                statusText = 'Moderate';
+                statusClass = 'moderate';
+                scoreValue.style.color = '#F57F17';
+                progressCircle.classList.add('moderate');
+            } else {
+                statusText = 'Needs Attention';
+                statusClass = 'needs-attention';
+                scoreValue.style.color = '#C62828';
+                progressCircle.classList.add('needs-attention');
+            }
+            
+            scoreStatus.textContent = statusText;
+            scoreStatus.className = `score-status ${statusClass}`;
+        }
+
+        function updateForecast(age, weight) {
+            const monthsTo18 = Math.max(0, 18 - age);
+            const growthPerMonth = 15;
+            const expectedWeight = weight + (monthsTo18 * growthPerMonth);
+            const idealWeight = 400;
+            
+            document.getElementById('currentWeightDisplay').textContent = `${Math.round(weight)} kg`;
+            document.getElementById('predictedWeightDisplay').textContent = `${Math.round(expectedWeight)} kg`;
+            
+            const forecastInsight = document.getElementById('forecastInsight');
+            let insightHTML = `<div class="insight-text">`;
+            
+            if (expectedWeight >= idealWeight * 0.9) {
+                insightHTML += `<p class="insight-positive">📈 <strong>On Track:</strong> Your animal is expected to reach ${Math.round(expectedWeight)} kg by 18 months.</p>`;
+                insightHTML += `<p class="insight-detail">This is within the ideal target range of ${Math.round(idealWeight * 0.9)}–${Math.round(idealWeight)} kg.</p>`;
+            } else {
+                const gap = Math.round(idealWeight - expectedWeight);
+                insightHTML += `<p class="insight-warning">⚠️ <strong>Slight Gap Detected:</strong> Expected weight (${Math.round(expectedWeight)} kg) is ${gap} kg below ideal.</p>`;
+                insightHTML += `<p class="insight-detail">Nutrition adjustment and vet consultation recommended.</p>`;
+            }
+            
+            insightHTML += `</div>`;
+            forecastInsight.innerHTML = insightHTML;
+        }
+
+        function updateRecommendations(age, milkingStatus, growthRate, weight) {
+            const recommendations = {
+                '🥛 Nutrition': [],
+                '💧 Hydration': [],
+                '🌡️ Health Monitoring': [],
+                '🏠 Hygiene & Environment': []
+            };
+
+            // Nutrition
+            if (age < 6) {
+                recommendations['🥛 Nutrition'].push('Ensure proper colostrum/milk feeding');
+            }
+            if (growthRate < 60) {
+                recommendations['🥛 Nutrition'].push('Increase protein content in feed');
+                recommendations['🥛 Nutrition'].push('Consider vitamin supplements');
+            } else if (growthRate < 80) {
+                recommendations['🥛 Nutrition'].push('Monitor feed quality');
+                recommendations['🥛 Nutrition'].push('Consider gradual diet adjustments');
+            }
+            if (!recommendations['🥛 Nutrition'].length) {
+                recommendations['🥛 Nutrition'].push('Continue current feeding program');
+            }
+
+            // Hydration
+            recommendations['💧 Hydration'].push('Constant access to clean, fresh water');
+            recommendations['💧 Hydration'].push('Monitor water intake daily');
+
+            // Health Monitoring
+            recommendations['🌡️ Health Monitoring'].push('Check body temperature regularly');
+            if (milkingStatus === 'yes') {
+                recommendations['🌡️ Health Monitoring'].push('Monitor milk production');
+            }
+            recommendations['🌡️ Health Monitoring'].push('Schedule routine vet check-ups');
+
+            // Hygiene
+            recommendations['🏠 Hygiene & Environment'].push('Maintain clean housing conditions');
+            recommendations['🏠 Hygiene & Environment'].push('Regular bedding replacement');
+            recommendations['🏠 Hygiene & Environment'].push('Ensure proper ventilation');
+
+            const grid = document.getElementById('recommendationsGrid');
+            grid.innerHTML = '';
+
+            for (const [category, items] of Object.entries(recommendations)) {
+                const card = document.createElement('div');
+                card.className = 'recommendation-card';
+                card.innerHTML = `
+                    <h4>${category}</h4>
+                    <ul class="recommendation-list">
+                        ${items.map(item => `<li>${item}</li>`).join('')}
+                    </ul>
+                `;
+                grid.appendChild(card);
+            }
+        }
+
+        function downloadHealthReport() {
+            alert('Health report PDF download feature - ready to implement');
+        }
+
+        function resetForm() {
+            document.getElementById('analyticsForm').reset();
+            document.getElementById('resultsSection').classList.add('hidden');
+        }
+
+        // Utility functions
+        function calculateGrowthRate(age, weight, feedingPattern) {
+            const idealWeights = { 6: 150, 12: 250, 18: 350, 24: 400 };
+            const nearestAge = Object.keys(idealWeights).reduce((prev, curr) => 
+                Math.abs(curr - age) < Math.abs(prev - age) ? curr : prev
+            );
+            const idealWeight = idealWeights[nearestAge];
+            const growthRate = (weight / idealWeight) * 100;
+            const feedingFactors = { organic: 1.1, mixed: 1.0, commercial: 0.9 };
+            return growthRate * feedingFactors[feedingPattern];
+        }
+
+        function calculateEstimatedWeight(age) {
+            return 100 + (age * 16.67);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('analyticsForm');
+            if (form) {
+                form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    analyzeHealth();
+                });
+            }
+        });
+    </script>
+</body>
+</html>

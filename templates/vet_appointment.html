@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Book Veterinary Appointment</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Settings -->
+    <div class="language-settings">
+        <button class="settings-btn" onclick="toggleSettings()">
+            <span class="settings-icon">⚙️</span>
+            <span>Settings</span>
+        </button>
+        <div class="settings-menu" id="settingsMenu">
+            <div class="menu-item" onclick="toggleLanguageOptions()">
+                <span class="lang-icon">🌐</span>
+                <span>Language</span>
+                <span class="current-lang">EN</span>
+            </div>
+            <div class="menu-item" onclick="toggleMobileFormat()">
+                <span class="mobile-icon">📱</span>
+                <span class="mode-text">Desktop Mode</span>
+            </div>
+            <div class="language-options" id="languageMenu">
+                <div class="submenu-item" onclick="changeLanguage('en')">
+                    <span class="lang-flag">🇬🇧</span>
+                    English
+                </div>
+                <div class="submenu-item" onclick="changeLanguage('ta')">
+                    <span class="lang-flag">🇮🇳</span>
+                    தமிழ்
+                </div>
+                <div class="submenu-item" onclick="changeLanguage('hi')">
+                    <span class="lang-flag">🇮🇳</span>
+                    हिन्दी
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="appointment-page">
+        <div class="appointment-container">
+            <!-- Hero Section -->
+            <div class="appointment-hero">
+                <h1 class="page-title">Book Veterinary Appointment</h1>
+                <p class="page-subtitle">Connect with trusted veterinarians in 3 simple steps</p>
+            </div>
+
+            <!-- Step Indicator -->
+            <div class="step-indicator">
+                <div class="step active" data-step="1">
+                    <span class="step-number">1</span>
+                    <span class="step-label">Your Details</span>
+                </div>
+                <div class="step-divider"></div>
+                <div class="step" data-step="2">
+                    <span class="step-number">2</span>
+                    <span class="step-label">Choose Vet</span>
+                </div>
+                <div class="step-divider"></div>
+                <div class="step" data-step="3">
+                    <span class="step-number">3</span>
+                    <span class="step-label">Confirm</span>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="appointment-content">
+                <!-- Left Panel: Details Form -->
+                <div class="details-panel">
+                    <div class="panel-header">
+                        <span class="panel-icon">🐾</span>
+                        <h2>Step 1: Your Details</h2>
+                    </div>
+                    
+                    <form id="detailsForm" class="details-form">
+                        <div class="form-group">
+                            <label>Your Name *</label>
+                            <input type="text" id="userName" placeholder="Enter your name" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Animal Type *</label>
+                            <select id="animalType" required onchange="updateVetFilters()">
+                                <option value="">Select animal type</option>
+                                <option value="Cow">🐄 Cow</option>
+                                <option value="Dog">🐕 Dog</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Animal Age (years) *</label>
+                            <input type="number" id="animalAge" placeholder="e.g., 3" required min="0" max="30">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Reason for Visit *</label>
+                            <select id="visitReason" required>
+                                <option value="">Select reason</option>
+                                <option value="Regular Checkup">Regular Checkup</option>
+                                <option value="Vaccination">Vaccination</option>
+                                <option value="Skin Problem">Skin Problem</option>
+                                <option value="Injury">Injury</option>
+                                <option value="Follow-up">Follow-up Visit</option>
+                                <option value="Emergency">Emergency</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+
+                        <button type="button" class="form-toggle-btn" onclick="toggleAdvancedFields()">
+                            <span>➕</span> Additional Info
+                        </button>
+
+                        <div id="advancedFields" class="advanced-fields hidden">
+                            <div class="form-group">
+                                <label>Additional Notes</label>
+                                <textarea id="additionalNotes" placeholder="Any medical conditions or allergies..." rows="3"></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Preferred Date *</label>
+                                <input type="date" id="preferredDate" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Preferred Time *</label>
+                                <input type="time" id="preferredTime" required>
+                            </div>
+                        </div>
+
+                        <button type="button" class="continue-btn" onclick="validateAndScroll()">
+                            Continue to Vet Selection →
+                        </button>
+                    </form>
+
+                    <div class="trust-signals">
+                        <div class="signal">✔ Verified Vets</div>
+                        <div class="signal">🔒 Secure Booking</div>
+                        <div class="signal">📱 Instant Confirmation</div>
+                    </div>
+                </div>
+
+                <!-- Right Panel: Vet Selection -->
+                <div class="vet-selection-panel">
+                    <div class="panel-header">
+                        <span class="panel-icon">👨‍⚕️</span>
+                        <h2>Step 2: Choose Veterinarian</h2>
+                    </div>
+
+                    <!-- Filter & Search -->
+                    <div class="vet-filters">
+                        <button class="filter-btn active" onclick="filterVets('all')">
+                            All Vets
+                        </button>
+                        <button class="filter-btn" onclick="filterVets('nearby')">
+                            📍 Near Me
+                        </button>
+                        <button class="filter-btn" id="specialtyFilter" onclick="filterVets('specialty')" style="display:none;">
+                            💼 Specialist
+                        </button>
+                        <button class="filter-btn" onclick="filterVets('toprated')">
+                            ⭐ Top Rated
+                        </button>
+                    </div>
+
+                    <!-- Vet Cards -->
+                    <div class="vet-cards-grid" id="vetCardsContainer">
+                        <!-- Generated dynamically -->
+                    </div>
+
+                    <button class="find-nearby-btn" onclick="findNearbyVets()">
+                        📍 Find Nearby Vet Hospitals
+                    </button>
+                </div>
+            </div>
+
+            <!-- Resources Section (Collapsible) -->
+            <div class="resources-section">
+                <h2 class="resources-title">📚 Helpful Resources</h2>
+                
+                <div class="resource-accordion">
+                    <div class="accordion-item">
+                        <button class="accordion-header" onclick="toggleAccordion(this)">
+                            <span class="accordion-icon">🏥</span>
+                            <span>How to Prepare Your Pet for a Vet Visit</span>
+                            <span class="accordion-toggle">+</span>
+                        </button>
+                        <div class="accordion-content collapsed">
+                            <ul class="resource-list">
+                                <li>Keep your pet calm and comfortable</li>
+                                <li>Bring medical history and vaccination records</li>
+                                <li>List any symptoms or changes in behavior</li>
+                                <li>Fast if required (ask when booking)</li>
+                                <li>Bring favorite treats or toys for comfort</li>
+                                <li>Arrive 10-15 minutes early</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <button class="accordion-header" onclick="toggleAccordion(this)">
+                            <span class="accordion-icon">❓</span>
+                            <span>Questions to Ask Your Veterinarian</span>
+                            <span class="accordion-toggle">+</span>
+                        </button>
+                        <div class="accordion-content collapsed">
+                            <ul class="resource-list">
+                                <li>What preventive care is recommended?</li>
+                                <li>How is my pet's weight and nutrition?</li>
+                                <li>Are vaccinations up to date?</li>
+                                <li>What are common health risks?</li>
+                                <li>How often should I schedule check-ups?</li>
+                                <li>What side effects should I watch for?</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <button class="accordion-header" onclick="toggleAccordion(this)">
+                            <span class="accordion-icon">🚨</span>
+                            <span>Emergency Signs to Watch For</span>
+                            <span class="accordion-toggle">+</span>
+                        </button>
+                        <div class="accordion-content collapsed">
+                            <div class="emergency-grid">
+                                <div class="emergency-group">
+                                    <h4>In Dogs:</h4>
+                                    <ul class="resource-list">
+                                        <li>Difficulty breathing</li>
+                                        <li>Severe vomiting/diarrhea</li>
+                                        <li>Collapse or weakness</li>
+                                        <li>Seizures</li>
+                                        <li>Bloated abdomen</li>
+                                    </ul>
+                                </div>
+                                <div class="emergency-group">
+                                    <h4>In Cows:</h4>
+                                    <ul class="resource-list">
+                                        <li>Sudden loss of appetite</li>
+                                        <li>Severe bloating</li>
+                                        <li>High fever</li>
+                                        <li>Sudden milk drop</li>
+                                        <li>Severe lameness</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Booking Modal -->
+    <div class="booking-modal hidden" id="bookingModal">
+        <div class="booking-modal-content">
+            <button class="close-modal" onclick="closeBookingModal()">✕</button>
+            
+            <div class="modal-header">
+                <h2>Complete Your Booking</h2>
+                <p>Final step: confirm appointment details</p>
+            </div>
+            
+            <div class="modal-vet-card" id="modalVetInfo"></div>
+            
+            <form id="bookingForm" class="booking-form">
+                <div class="form-group">
+                    <label>Preferred Date</label>
+                    <input type="date" id="modalDate" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Preferred Time</label>
+                    <input type="time" id="modalTime" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Additional Notes (Optional)</label>
+                    <textarea id="modalNotes" placeholder="Any special requirements..." rows="3"></textarea>
+                </div>
+
+                <button type="submit" class="confirm-btn">
+                    📞 Confirm & Send via WhatsApp
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let selectedVetData = null;
+        let currentFilter = 'all';
+
+        const vets = [
+            {
+                name: 'Dr. Vishal',
+                specialty: 'Veterinary Surgeon',
+                hospital: 'Pet Care Hospital',
+                location: 'Anna Nagar, Chennai',
+                timings: '9:00 AM - 8:00 PM',
+                phone: '7810065192',
+                experience: '15 years',
+                verified: true,
+                rating: 4.8,
+                reviews: 245,
+                avatar: '👨‍⚕️',
+                type: 'both'
+            },
+            {
+                name: 'Dr. Priya Singh',
+                specialty: 'Animal Dermatologist',
+                hospital: 'City Veterinary Clinic',
+                location: 'T. Nagar, Chennai',
+                timings: '10:00 AM - 7:00 PM',
+                phone: '9876543211',
+                experience: '12 years',
+                verified: true,
+                rating: 4.9,
+                reviews: 189,
+                avatar: '👩‍⚕️',
+                type: 'dog'
+            },
+            {
+                name: 'Dr. Hari Haran',
+                specialty: 'General Practitioner',
+                hospital: 'Advanced Animal Care',
+                location: 'Velachery, Chennai',
+                timings: '8:30 AM - 9:00 PM',
+                phone: '9876543212',
+                experience: '10 years',
+                verified: true,
+                rating: 4.7,
+                reviews: 156,
+                avatar: '👨‍⚕️',
+                type: 'both'
+            },
+            {
+                name: 'Dr. Rajesh Kumar',
+                specialty: 'Livestock Specialist',
+                hospital: 'Cattle Care Center',
+                location: 'Poonamallee, Chennai',
+                timings: '7:00 AM - 6:00 PM',
+                phone: '9876543214',
+                experience: '18 years',
+                verified: true,
+                rating: 4.9,
+                reviews: 267,
+                avatar: '👨‍⚕️',
+                type: 'cow'
+            },
+            {
+                name: 'Dr. Ananya Mehra',
+                specialty: 'Emergency Medicine',
+                hospital: 'Emergency Pet Hospital',
+                location: 'Guindy, Chennai',
+                timings: '24/7 Available',
+                phone: '9876543215',
+                experience: '11 years',
+                verified: true,
+                rating: 4.8,
+                reviews: 198,
+                avatar: '👩‍⚕️',
+                type: 'both'
+            }
+        ];
+
+        function createVetCards(filter = 'all') {
+            const container = document.getElementById('vetCardsContainer');
+            container.innerHTML = '';
+            
+            let filteredVets = vets;
+            
+            if (filter === 'toprated') {
+                filteredVets = vets.filter(v => v.rating >= 4.7);
+            } else if (filter === 'specialty') {
+                const type = document.getElementById('animalType').value;
+                if (type === 'Cow') {
+                    filteredVets = vets.filter(v => v.type === 'cow' || v.type === 'both');
+                } else if (type === 'Dog') {
+                    filteredVets = vets.filter(v => v.type === 'dog' || v.type === 'both');
+                }
+            }
+            
+            filteredVets.forEach(vet => {
+                const card = document.createElement('div');
+                card.className = 'vet-card';
+                card.innerHTML = `
+                    <div class="vet-card-header">
+                        <div class="vet-avatar">${vet.avatar}</div>
+                        <div class="vet-name-block">
+                            <h3>${vet.name}</h3>
+                            <p class="vet-specialty">${vet.specialty}</p>
+                        </div>
+                        ${vet.verified ? '<span class="verified-badge">✓</span>' : ''}
+                    </div>
+                    
+                    <div class="vet-info-grid">
+                        <div class="info-item">
+                            <span class="icon">⏰</span>
+                            <span>${vet.timings}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="icon">📍</span>
+                            <span>${vet.location}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="icon">💼</span>
+                            <span>${vet.experience}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="vet-rating">
+                        <span class="stars">⭐ ${vet.rating}</span>
+                        <span class="reviews">(${vet.reviews} reviews)</span>
+                    </div>
+                    
+                    <button class="book-btn" onclick="selectVet('${vet.name}', '${vet.phone}', '${vet.specialty}', '${vet.hospital}')">
+                        Book Appointment
+                    </button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function selectVet(name, phone, specialty, hospital) {
+            const animalType = document.getElementById('animalType').value;
+            const animalAge = document.getElementById('animalAge').value;
+            const userName = document.getElementById('userName').value;
+            const visitReason = document.getElementById('visitReason').value;
+
+            if (!userName || !animalType || !animalAge || !visitReason) {
+                alert('Please complete your details first');
+                return;
+            }
+
+            selectedVetData = { name, phone, specialty, hospital };
+            
+            const modalVetInfo = document.getElementById('modalVetInfo');
+            modalVetInfo.innerHTML = `
+                <div class="modal-vet-details">
+                    <p><strong>Doctor:</strong> ${name}</p>
+                    <p><strong>Specialty:</strong> ${specialty}</p>
+                    <p><strong>Hospital:</strong> ${hospital}</p>
+                </div>
+            `;
+
+            document.getElementById('bookingModal').classList.remove('hidden');
+            document.getElementById('modalDate').min = new Date().toISOString().split('T')[0];
+        }
+
+        function closeBookingModal() {
+            document.getElementById('bookingModal').classList.add('hidden');
+        }
+
+        function toggleAdvancedFields() {
+            const fields = document.getElementById('advancedFields');
+            fields.classList.toggle('hidden');
+        }
+
+        function validateAndScroll() {
+            const userName = document.getElementById('userName').value;
+            const animalType = document.getElementById('animalType').value;
+            const animalAge = document.getElementById('animalAge').value;
+            const visitReason = document.getElementById('visitReason').value;
+
+            if (!userName || !animalType || !animalAge || !visitReason) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            const vetPanel = document.querySelector('.vet-selection-panel');
+            vetPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function updateVetFilters() {
+            const type = document.getElementById('animalType').value;
+            const specialtyBtn = document.getElementById('specialtyFilter');
+            if (type) {
+                specialtyBtn.style.display = 'block';
+            }
+            createVetCards('all');
+        }
+
+        function filterVets(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            createVetCards(filter);
+        }
+
+        function toggleAccordion(header) {
+            const content = header.nextElementSibling;
+            const toggle = header.querySelector('.accordion-toggle');
+            
+            document.querySelectorAll('.accordion-content').forEach(c => {
+                if (c !== content && !c.classList.contains('collapsed')) {
+                    c.classList.add('collapsed');
+                    c.previousElementSibling.querySelector('.accordion-toggle').textContent = '+';
+                }
+            });
+            
+            content.classList.toggle('collapsed');
+            toggle.textContent = content.classList.contains('collapsed') ? '+' : '−';
+        }
+
+        function findNearbyVets() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const {latitude, longitude} = position.coords;
+                        window.open(`https://www.google.com/maps/search/veterinary+hospitals/@${latitude},${longitude},13z`, '_blank');
+                    },
+                    () => {
+                        window.open('https://www.google.com/maps/search/veterinary+hospitals', '_blank');
+                    }
+                );
+            } else {
+                window.open('https://www.google.com/maps/search/veterinary+hospitals', '_blank');
+            }
+        }
+
+        document.getElementById('bookingForm')?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const date = document.getElementById('modalDate').value;
+            const time = document.getElementById('modalTime').value;
+            const notes = document.getElementById('modalNotes').value;
+            const userName = document.getElementById('userName').value;
+            const animalType = document.getElementById('animalType').value;
+            const animalAge = document.getElementById('animalAge').value;
+            const visitReason = document.getElementById('visitReason').value;
+
+            const message = `🐾 *Appointment Request*\n\n` +
+                `*Patient:* ${userName}\n` +
+                `*Animal:* ${animalType}, ${animalAge} years\n` +
+                `*Reason:* ${visitReason}\n` +
+                `*Date:* ${date}\n` +
+                `*Time:* ${time}\n\n` +
+                `${notes ? `*Notes:* ${notes}\n\n` : ''}` +
+                `Please confirm my appointment. Thank you!`;
+
+            window.open(`https://wa.me/${selectedVetData.phone}?text=${encodeURIComponent(message)}`, '_blank');
+            closeBookingModal();
+        });
+
+        // Settings functions
+        function toggleSettings() {
+            document.getElementById('settingsMenu').classList.toggle('show');
+        }
+
+        function toggleLanguageOptions() {
+            document.getElementById('languageMenu').classList.toggle('show');
+        }
+
+        function changeLanguage(lang) {
+            localStorage.setItem('preferred-language', lang);
+            document.querySelector('.current-lang').textContent = lang === 'en' ? 'EN' : 'TA';
+        }
+
+        function toggleMobileFormat() {
+            document.body.classList.toggle('mobile-format');
+            localStorage.setItem('viewMode', document.body.classList.contains('mobile-format') ? 'mobile' : 'desktop');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            createVetCards();
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('preferredDate').min = today;
+        });
+
+        document.addEventListener('click', (e) => {
+            const settingsMenu = document.getElementById('settingsMenu');
+            const settingsBtn = document.querySelector('.settings-btn');
+            if (!settingsMenu.contains(e.target) && !settingsBtn.contains(e.target)) {
+                settingsMenu.classList.remove('show');
+            }
+        });
+    </script>
+</body>
+</html>

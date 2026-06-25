@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard - VetCare AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .admin-page {
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+        }
+
+        .admin-page::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle at 20% 50%, rgba(76, 175, 80, 0.08) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(33, 150, 243, 0.08) 0%, transparent 50%),
+                        radial-gradient(circle at 50% 80%, rgba(156, 39, 176, 0.06) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .admin-container {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 30px 20px 60px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header */
+        .admin-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .admin-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #4CAF50, #2196F3, #9C27B0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .admin-header p {
+            color: rgba(255,255,255,0.6);
+            font-size: 1rem;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 30px;
+            left: 20px;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            border-radius: 12px;
+            text-decoration: none;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+            z-index: 10;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateX(-3px);
+        }
+
+        /* Refresh button */
+        .refresh-btn {
+            position: absolute;
+            top: 30px;
+            right: 20px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #4CAF50, #2196F3);
+            border: none;
+            color: white;
+            border-radius: 12px;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            z-index: 10;
+        }
+
+        .refresh-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(76,175,80,0.4);
+        }
+
+        .refresh-btn.loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        /* Summary Cards */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 35px;
+        }
+
+        .summary-card {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 18px;
+            padding: 25px;
+            text-align: center;
+            backdrop-filter: blur(12px);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .summary-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            border-radius: 18px 18px 0 0;
+        }
+
+        .summary-card.total::before { background: linear-gradient(90deg, #4CAF50, #8BC34A); }
+        .summary-card.cow::before { background: linear-gradient(90deg, #2196F3, #03A9F4); }
+        .summary-card.dog::before { background: linear-gradient(90deg, #9C27B0, #E040FB); }
+        .summary-card.healthy::before { background: linear-gradient(90deg, #00C853, #69F0AE); }
+        .summary-card.diseased::before { background: linear-gradient(90deg, #FF5252, #FF8A80); }
+
+        .summary-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+            border-color: rgba(255,255,255,0.2);
+        }
+
+        .summary-icon {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .summary-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: white;
+            line-height: 1.1;
+        }
+
+        .summary-label {
+            color: rgba(255,255,255,0.5);
+            font-size: 0.85rem;
+            margin-top: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Charts Section */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+            margin-bottom: 35px;
+        }
+
+        .chart-card {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 18px;
+            padding: 25px;
+            backdrop-filter: blur(12px);
+        }
+
+        .chart-card h3 {
+            color: white;
+            font-size: 1.15rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chart-card canvas {
+            max-height: 320px;
+        }
+
+        /* Recent Uploads Table */
+        .recent-section {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 18px;
+            padding: 25px;
+            backdrop-filter: blur(12px);
+            margin-bottom: 35px;
+        }
+
+        .recent-section h3 {
+            color: white;
+            font-size: 1.15rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .uploads-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 8px;
+        }
+
+        .uploads-table thead th {
+            color: rgba(255,255,255,0.5);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            padding: 0 15px 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .uploads-table tbody tr {
+            background: rgba(255,255,255,0.04);
+            border-radius: 12px;
+            transition: all 0.2s;
+        }
+
+        .uploads-table tbody tr:hover {
+            background: rgba(255,255,255,0.08);
+        }
+
+        .uploads-table td {
+            padding: 14px 15px;
+            color: rgba(255,255,255,0.85);
+            font-size: 0.9rem;
+        }
+
+        .uploads-table td:first-child {
+            border-radius: 12px 0 0 12px;
+        }
+
+        .uploads-table td:last-child {
+            border-radius: 0 12px 12px 0;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 600;
+        }
+
+        .badge-cow {
+            background: rgba(33,150,243,0.15);
+            color: #64B5F6;
+            border: 1px solid rgba(33,150,243,0.3);
+        }
+
+        .badge-dog {
+            background: rgba(156,39,176,0.15);
+            color: #CE93D8;
+            border: 1px solid rgba(156,39,176,0.3);
+        }
+
+        .badge-healthy {
+            background: rgba(76,175,80,0.15);
+            color: #81C784;
+            border: 1px solid rgba(76,175,80,0.3);
+        }
+
+        .badge-diseased {
+            background: rgba(244,67,54,0.15);
+            color: #EF9A9A;
+            border: 1px solid rgba(244,67,54,0.3);
+        }
+
+        .confidence-bar {
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255,255,255,0.1);
+            overflow: hidden;
+            min-width: 80px;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.6s ease;
+        }
+
+        .confidence-high { background: linear-gradient(90deg, #4CAF50, #8BC34A); }
+        .confidence-medium { background: linear-gradient(90deg, #FF9800, #FFC107); }
+        .confidence-low { background: linear-gradient(90deg, #f44336, #FF5722); }
+
+        /* Folder Structure */
+        .folder-section {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 18px;
+            padding: 25px;
+            backdrop-filter: blur(12px);
+        }
+
+        .folder-section h3 {
+            color: white;
+            font-size: 1.15rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .folder-tree {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        .folder-item {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s;
+        }
+
+        .folder-item:hover {
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(255,255,255,0.15);
+        }
+
+        .folder-icon {
+            font-size: 1.5rem;
+        }
+
+        .folder-info h4 {
+            color: white;
+            font-size: 0.95rem;
+            margin: 0 0 3px;
+        }
+
+        .folder-info span {
+            color: rgba(255,255,255,0.45);
+            font-size: 0.8rem;
+        }
+
+        .folder-count {
+            margin-left: auto;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: white;
+            background: rgba(255,255,255,0.08);
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+        }
+
+        /* No data state */
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: rgba(255,255,255,0.4);
+        }
+
+        .no-data-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        /* Loading spinner */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Last updated */
+        .last-updated {
+            text-align: center;
+            color: rgba(255,255,255,0.3);
+            font-size: 0.8rem;
+            margin-top: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .admin-header h1 { font-size: 1.8rem; }
+            .summary-grid { grid-template-columns: repeat(2, 1fr); }
+            .charts-grid { grid-template-columns: 1fr; }
+            .uploads-table { font-size: 0.8rem; }
+            .back-btn { position: static; margin-bottom: 15px; display: inline-block; }
+            .refresh-btn { position: static; margin-bottom: 15px; display: inline-block; }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-page">
+        <a href="{{ url_for('health_analytics') }}" class="back-btn">← Back to Analytics</a>
+        <button class="refresh-btn" onclick="loadDashboard()" id="refreshBtn">🔄 Refresh Data</button>
+
+        <div class="admin-container">
+            <!-- Header -->
+            <div class="admin-header">
+                <h1>🛡️ Admin Dashboard</h1>
+                <p>Firebase Firestore Analytics & Image Upload Insights</p>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="summary-grid" id="summaryGrid">
+                <div class="summary-card total">
+                    <span class="summary-icon">📊</span>
+                    <div class="summary-value" id="totalUploads">--</div>
+                    <div class="summary-label">Total Uploads</div>
+                </div>
+                <div class="summary-card cow">
+                    <span class="summary-icon">🐄</span>
+                    <div class="summary-value" id="cowTotal">--</div>
+                    <div class="summary-label">Cow Images</div>
+                </div>
+                <div class="summary-card dog">
+                    <span class="summary-icon">🐕</span>
+                    <div class="summary-value" id="dogTotal">--</div>
+                    <div class="summary-label">Dog Images</div>
+                </div>
+                <div class="summary-card healthy">
+                    <span class="summary-icon">✅</span>
+                    <div class="summary-value" id="healthyTotal">--</div>
+                    <div class="summary-label">Healthy Detected</div>
+                </div>
+                <div class="summary-card diseased">
+                    <span class="summary-icon">⚠️</span>
+                    <div class="summary-value" id="diseasedTotal">--</div>
+                    <div class="summary-label">Diseased Detected</div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <h3>📊 Uploads by Animal Type</h3>
+                    <canvas id="animalChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>🩺 Disease Classification Breakdown</h3>
+                    <canvas id="diseaseChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>🐄 Cow Detection Results</h3>
+                    <canvas id="cowChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>🐕 Dog Detection Results</h3>
+                    <canvas id="dogChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Recent Uploads -->
+            <div class="recent-section">
+                <h3>📋 Recent Image Uploads</h3>
+                <div style="overflow-x: auto;">
+                    <table class="uploads-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Animal</th>
+                                <th>Prediction</th>
+                                <th>Confidence</th>
+                                <th>Filename</th>
+                                <th>Timestamp</th>
+                            </tr>
+                        </thead>
+                        <tbody id="uploadsBody">
+                            <tr><td colspan="6" class="no-data"><span class="no-data-icon">📭</span>Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Local Folder Structure -->
+            <div class="folder-section">
+                <h3>📁 Local Storage Structure</h3>
+                <div class="folder-tree" id="folderTree">
+                    <div class="no-data"><span class="no-data-icon">📂</span>Loading...</div>
+                </div>
+            </div>
+
+            <div class="last-updated" id="lastUpdated"></div>
+        </div>
+    </div>
+
+    <script>
+        // Chart instances
+        let animalChart, diseaseChart, cowChart, dogChart;
+
+        async function loadDashboard() {
+            const btn = document.getElementById('refreshBtn');
+            btn.classList.add('loading');
+            btn.innerHTML = '<span class="spinner"></span> Loading...';
+
+            try {
+                const res = await fetch('/api/admin/stats');
+                const data = await res.json();
+
+                if (data.error) {
+                    console.error('API Error:', data.error);
+                    document.getElementById('uploadsBody').innerHTML =
+                        `<tr><td colspan="6" class="no-data"><span class="no-data-icon">⚠️</span>${data.error}</td></tr>`;
+                    return;
+                }
+
+                updateSummaryCards(data);
+                updateCharts(data);
+                updateRecentTable(data.recent_uploads || []);
+                updateFolderTree(data.local_stats || {});
+
+                document.getElementById('lastUpdated').textContent =
+                    `Last updated: ${new Date().toLocaleString()}`;
+            } catch (err) {
+                console.error('Failed to load dashboard:', err);
+            } finally {
+                btn.classList.remove('loading');
+                btn.innerHTML = '🔄 Refresh Data';
+            }
+        }
+
+        function updateSummaryCards(data) {
+            const counts = data.counts || {};
+            const cowData = counts.cow || {};
+            const dogData = counts.dog || {};
+
+            const cowTotal = cowData.total || 0;
+            const dogTotal = dogData.total || 0;
+            const totalUploads = cowTotal + dogTotal;
+
+            const cowHealthy = cowData.healthy || 0;
+            const dogHealthy = dogData.healthy || 0;
+            const healthyTotal = cowHealthy + dogHealthy;
+            const diseasedTotal = totalUploads - healthyTotal;
+
+            animateValue('totalUploads', totalUploads);
+            animateValue('cowTotal', cowTotal);
+            animateValue('dogTotal', dogTotal);
+            animateValue('healthyTotal', healthyTotal);
+            animateValue('diseasedTotal', diseasedTotal);
+        }
+
+        function animateValue(id, target) {
+            const el = document.getElementById(id);
+            let current = 0;
+            const step = Math.max(1, Math.ceil(target / 30));
+            const timer = setInterval(() => {
+                current += step;
+                if (current >= target) {
+                    current = target;
+                    clearInterval(timer);
+                }
+                el.textContent = current;
+            }, 30);
+        }
+
+        function updateCharts(data) {
+            const counts = data.counts || {};
+            const cowData = counts.cow || {};
+            const dogData = counts.dog || {};
+
+            const cowTotal = cowData.total || 0;
+            const dogTotal = dogData.total || 0;
+
+            // Destroy existing charts
+            if (animalChart) animalChart.destroy();
+            if (diseaseChart) diseaseChart.destroy();
+            if (cowChart) cowChart.destroy();
+            if (dogChart) dogChart.destroy();
+
+            // Chart defaults
+            Chart.defaults.color = 'rgba(255,255,255,0.7)';
+            Chart.defaults.borderColor = 'rgba(255,255,255,0.08)';
+
+            // 1. Animal Type Bar Chart
+            animalChart = new Chart(document.getElementById('animalChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['🐄 Cow', '🐕 Dog'],
+                    datasets: [{
+                        label: 'Total Images',
+                        data: [cowTotal, dogTotal],
+                        backgroundColor: [
+                            'rgba(33, 150, 243, 0.7)',
+                            'rgba(156, 39, 176, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(33, 150, 243, 1)',
+                            'rgba(156, 39, 176, 1)'
+                        ],
+                        borderWidth: 2,
+                        borderRadius: 8,
+                        barThickness: 60
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            cornerRadius: 8,
+                            padding: 12
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 1 },
+                            grid: { color: 'rgba(255,255,255,0.05)' }
+                        },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // 2. Disease Classification Doughnut
+            const allLabels = [];
+            const allData = [];
+            const allColors = [];
+            const colorMap = {
+                healthy: { bg: 'rgba(76,175,80,0.7)', border: '#4CAF50' },
+                lsd: { bg: 'rgba(244,67,54,0.7)', border: '#f44336' },
+                fungal_infection: { bg: 'rgba(255,152,0,0.7)', border: '#FF9800' },
+                hypersensitivity_allergy: { bg: 'rgba(156,39,176,0.7)', border: '#9C27B0' }
+            };
+
+            for (const [key, val] of Object.entries(cowData)) {
+                if (key === 'total') continue;
+                allLabels.push(`Cow - ${formatLabel(key)}`);
+                allData.push(val);
+                allColors.push(colorMap[key]?.bg || 'rgba(158,158,158,0.7)');
+            }
+            for (const [key, val] of Object.entries(dogData)) {
+                if (key === 'total') continue;
+                allLabels.push(`Dog - ${formatLabel(key)}`);
+                allData.push(val);
+                allColors.push(colorMap[key]?.bg || 'rgba(158,158,158,0.7)');
+            }
+
+            diseaseChart = new Chart(document.getElementById('diseaseChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: allLabels.length ? allLabels : ['No data yet'],
+                    datasets: [{
+                        data: allData.length ? allData : [1],
+                        backgroundColor: allColors.length ? allColors : ['rgba(255,255,255,0.1)'],
+                        borderColor: 'rgba(0,0,0,0.3)',
+                        borderWidth: 2,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    cutout: '55%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { padding: 15, usePointStyle: true, pointStyleWidth: 12 }
+                        }
+                    }
+                }
+            });
+
+            // 3. Cow Breakdown
+            const cowLabels = Object.keys(cowData).filter(k => k !== 'total').map(formatLabel);
+            const cowValues = Object.keys(cowData).filter(k => k !== 'total').map(k => cowData[k]);
+            const cowColors = Object.keys(cowData).filter(k => k !== 'total').map(k =>
+                k === 'healthy' ? 'rgba(76,175,80,0.7)' : 'rgba(244,67,54,0.7)'
+            );
+
+            cowChart = new Chart(document.getElementById('cowChart'), {
+                type: 'bar',
+                data: {
+                    labels: cowLabels.length ? cowLabels : ['No data'],
+                    datasets: [{
+                        label: 'Count',
+                        data: cowValues.length ? cowValues : [0],
+                        backgroundColor: cowColors.length ? cowColors : ['rgba(255,255,255,0.1)'],
+                        borderRadius: 8,
+                        barThickness: 50
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // 4. Dog Breakdown
+            const dogLabels = Object.keys(dogData).filter(k => k !== 'total').map(formatLabel);
+            const dogValues = Object.keys(dogData).filter(k => k !== 'total').map(k => dogData[k]);
+            const dogColorsList = Object.keys(dogData).filter(k => k !== 'total').map(k => {
+                if (k === 'healthy') return 'rgba(76,175,80,0.7)';
+                if (k === 'fungal_infection') return 'rgba(255,152,0,0.7)';
+                return 'rgba(156,39,176,0.7)';
+            });
+
+            dogChart = new Chart(document.getElementById('dogChart'), {
+                type: 'bar',
+                data: {
+                    labels: dogLabels.length ? dogLabels : ['No data'],
+                    datasets: [{
+                        label: 'Count',
+                        data: dogValues.length ? dogValues : [0],
+                        backgroundColor: dogColorsList.length ? dogColorsList : ['rgba(255,255,255,0.1)'],
+                        borderRadius: 8,
+                        barThickness: 50
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        function updateRecentTable(uploads) {
+            const tbody = document.getElementById('uploadsBody');
+
+            if (!uploads.length) {
+                tbody.innerHTML = `<tr><td colspan="6" class="no-data">
+                    <span class="no-data-icon">📭</span>No uploads yet. Upload images via Cow or Dog detection pages.
+                </td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = uploads.map((u, i) => {
+                const animalBadge = u.animal_type === 'cow'
+                    ? '<span class="badge badge-cow">🐄 Cow</span>'
+                    : '<span class="badge badge-dog">🐕 Dog</span>';
+
+                const isHealthy = u.prediction === 'healthy';
+                const predBadge = isHealthy
+                    ? `<span class="badge badge-healthy">${formatLabel(u.prediction)}</span>`
+                    : `<span class="badge badge-diseased">${formatLabel(u.prediction)}</span>`;
+
+                const conf = (u.confidence * 100).toFixed(1);
+                const confClass = conf >= 80 ? 'confidence-high' : conf >= 60 ? 'confidence-medium' : 'confidence-low';
+
+                return `<tr>
+                    <td>${i + 1}</td>
+                    <td>${animalBadge}</td>
+                    <td>${predBadge}</td>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <div class="confidence-bar">
+                                <div class="confidence-fill ${confClass}" style="width:${conf}%"></div>
+                            </div>
+                            <span style="font-size:0.8rem;">${conf}%</span>
+                        </div>
+                    </td>
+                    <td style="font-size:0.8rem;color:rgba(255,255,255,0.5);">${u.filename || '-'}</td>
+                    <td style="font-size:0.8rem;color:rgba(255,255,255,0.5);">${u.timestamp || '-'}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        function updateFolderTree(localStats) {
+            const container = document.getElementById('folderTree');
+
+            if (!Object.keys(localStats).length) {
+                container.innerHTML = `<div class="no-data">
+                    <span class="no-data-icon">📂</span>No local files found. Upload images to see folder structure.
+                </div>`;
+                return;
+            }
+
+            let html = '';
+            const icons = {
+                cow: '🐄', dog: '🐕',
+                healthy: '✅', lsd: '🦠',
+                fungal_infection: '🍄', hypersensitivity_allergy: '🤧'
+            };
+
+            for (const [animal, diseases] of Object.entries(localStats)) {
+                for (const [disease, count] of Object.entries(diseases)) {
+                    html += `
+                        <div class="folder-item">
+                            <span class="folder-icon">${icons[animal] || '📁'}</span>
+                            <div class="folder-info">
+                                <h4>uploads/${animal}/${disease}/</h4>
+                                <span>${icons[disease] || '📄'} ${formatLabel(disease)}</span>
+                            </div>
+                            <div class="folder-count">${count}</div>
+                        </div>`;
+                }
+            }
+
+            container.innerHTML = html;
+        }
+
+        function formatLabel(str) {
+            return str.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        }
+
+        // Load on page ready
+        document.addEventListener('DOMContentLoaded', loadDashboard);
+    </script>
+</body>
+</html>

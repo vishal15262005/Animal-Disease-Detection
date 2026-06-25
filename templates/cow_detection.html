@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cow Disease Detection</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="language-settings">
+        <button class="settings-btn" onclick="toggleSettings()">
+            <span class="settings-icon">⚙️</span>
+            <span>Settings</span>
+        </button>
+        <div class="settings-menu" id="settingsMenu">
+            <div class="menu-item" onclick="toggleLanguageOptions()">
+                <span class="lang-icon">🌐</span>
+                <span>Language</span>
+                <span class="current-lang">EN</span>
+            </div>
+            <div class="menu-item" onclick="toggleMobileFormat()">
+                <span class="mobile-icon">📱</span>
+                <span class="mode-text">Desktop Mode</span>
+            </div>
+            <div class="language-options" id="languageMenu">
+                <div class="submenu-item" onclick="changeLanguage('en')">
+                    <span class="lang-flag">🇬🇧</span>
+                    English
+                </div>
+                <div class="submenu-item" onclick="changeLanguage('ta')">
+                    <span class="lang-flag">🇮🇳</span>
+                    தமிழ்
+                </div>
+                <div class="submenu-item" onclick="changeLanguage('hi')">
+                    <span class="lang-flag">🇮🇳</span>
+                    हिन्दी
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="detection-page cow-theme">
+        <!-- Background Video -->
+        <video autoplay muted loop playsinline class="cow-bg-video">
+            <source src="{{ url_for('static', filename='videos/cow-bg.mp4') }}" type="video/mp4">
+        </video>
+        
+        <div class="detection-container">
+            <div class="page-header">
+                <h1 class="page-title">Cow Disease Detection</h1>
+                <p class="page-subtitle">AI-powered early detection using image analysis</p>
+            </div>
+
+            <div class="detection-methods">
+                <div class="method-card">
+                    <h2>📷 Use Camera</h2>
+                    <div class="camera-container">
+                        <div class="camera-label">Live Camera Preview</div>
+                        <video id="video" autoplay playsinline></video>
+                        <canvas id="canvas" style="display: none;"></canvas>
+                        <div class="camera-controls">
+                            <button id="start-camera" class="action-btn">Turn On Camera</button>
+                            <button id="capture-btn" class="action-btn" disabled>Capture Image</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="method-card">
+                    <h2>🖼️ Upload Image</h2>
+                    <form id="upload-form" class="upload-form">
+                        <div class="upload-section">
+                            <div class="upload-icon">📁</div>
+                            <p>Upload a clear close-up of the affected skin area</p>
+                            <input type="file" name="files" id="file" accept="image/*" multiple required>
+                            <small>(Best results with good lighting)</small>
+                        </div>
+                        <button type="submit" class="submit-btn">Analyze Images</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Preview Section -->
+            <div id="preview" class="preview-section">
+                <div class="section-divider"></div>
+                <h2>Image Preview</h2>
+                <div class="preview-caption">Uploaded Images</div>
+                <div id="preview-container" class="preview-container"></div>
+            </div>
+
+            <!-- Result Section -->
+            <div id="result" class="result-section hidden">
+                <h2 class="result-title">Detection Results</h2>
+
+                <div class="result-details">
+                    <div id="prediction-text" class="prediction-text">--</div>
+                    <div class="confidence-row">
+                        <div id="confidence-text" class="confidence-text">--</div>
+                        <div id="severity-badge" class="severity-badge hidden">--</div>
+                    </div>
+                </div>
+
+                <div class="disease-warning" id="disease-warning">
+                    ⚠️ Disease detected. Early consultation can prevent complications.
+                </div>
+
+                <div class="disease-info" id="disease-info"></div>
+
+                <div class="what-means" id="what-means" style="display:none;">
+                    <h3>What this result means</h3>
+                    <p id="meaning-text"></p>
+                </div>
+
+                <button onclick="generatePDF(window.lastResult)" class="download-btn">
+                    📄 Download Report
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <script>
+        let lastResult = null;
+
+        // Camera handling
+        const startCameraBtn = document.getElementById('start-camera');
+        const captureBtn = document.getElementById('capture-btn');
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+
+        startCameraBtn.addEventListener('click', async () => {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: 'environment' } 
+                });
+                video.srcObject = stream;
+                startCameraBtn.disabled = true;
+                captureBtn.disabled = false;
+            } catch (error) {
+                alert('Camera access denied');
+            }
+        });
+
+        captureBtn.addEventListener('click', () => {
+            const ctx = canvas.getContext('2d');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0);
+            
+            canvas.toBlob(blob => {
+                const file = new File([blob], 'camera-capture.jpg', { type: 'image/jpeg' });
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                document.getElementById('file').files = dt.files;
+                document.getElementById('upload-form').dispatchEvent(new Event('submit'));
+            });
+        });
+
+        // Upload form handling
+        document.getElementById('upload-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const files = document.getElementById('file').files;
+            if (!files || files.length === 0) {
+                alert('Please select at least one image');
+                return;
+            }
+
+            const submitBtn = e.target.querySelector('.submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Analyzing...';
+
+            const formData = new FormData();
+            for (let file of files) {
+                formData.append('files', file);
+            }
+
+            try {
+                const response = await fetch(`/predict?animal_type=cow`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                lastResult = result;
+                window.lastResult = result;
+
+                if (result.error) {
+                    alert(result.error);
+                    return;
+                }
+
+                displayPreview(files);
+                displayResults(result);
+                document.getElementById('result').classList.remove('hidden');
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error processing images');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Analyze Images';
+            }
+        });
+
+        function displayPreview(files) {
+            const container = document.getElementById('preview-container');
+            container.innerHTML = '';
+            document.getElementById('preview').style.display = 'block';
+
+            for (let file of files) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'preview-img';
+                    container.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function displayResults(result) {
+            const predictionText = document.getElementById('prediction-text');
+            const confidenceText = document.getElementById('confidence-text');
+            const severityBadge = document.getElementById('severity-badge');
+            const diseaseWarning = document.getElementById('disease-warning');
+            const diseaseInfo = document.getElementById('disease-info');
+            const whatMeans = document.getElementById('what-means');
+            const meaningText = document.getElementById('meaning-text');
+
+            const isDiseased = result.prediction.toLowerCase() !== 'healthy';
+
+            predictionText.textContent = `${result.prediction}`;
+            confidenceText.textContent = `Confidence: ${(result.confidence * 100).toFixed(2)}%`;
+
+            const conf = result.confidence;
+            let sev = 'low', label = '🟢 Low Severity';
+            if (conf >= 0.8 && isDiseased) { sev = 'high'; label = '🔴 High Severity'; }
+            else if (conf >= 0.6 && isDiseased) { sev = 'medium'; label = '🟡 Medium Severity'; }
+            severityBadge.textContent = label;
+            severityBadge.className = `severity-badge ${sev}`;
+            severityBadge.classList.remove('hidden');
+
+            if (isDiseased) {
+                diseaseWarning.classList.add('visible');
+            } else {
+                diseaseWarning.classList.remove('visible');
+            }
+
+            if (isDiseased) {
+                diseaseInfo.innerHTML = `
+                    <div class="medical-card">
+                        <div class="medical-columns">
+                            <div class="medical-column">
+                                <div class="medical-section">
+                                    <div class="section-icon">🩺</div>
+                                    <h4>Immediate Care</h4>
+                                    <ul class="checklist">
+                                        <li>Isolate affected animal</li>
+                                        <li>Provide clean water and nutrition</li>
+                                        <li>Monitor temperature twice daily</li>
+                                    </ul>
+                                </div>
+                                <div class="medical-section">
+                                    <div class="section-icon">💊</div>
+                                    <h4>Medical Advice</h4>
+                                    <ul class="checklist">
+                                        <li>Consult veterinarian promptly</li>
+                                        <li>Follow prescribed treatment</li>
+                                        <li>Control pain and inflammation</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="medical-column">
+                                <div class="medical-section">
+                                    <div class="section-icon">🧹</div>
+                                    <h4>Hygiene & Prevention</h4>
+                                    <ul class="checklist">
+                                        <li>Disinfect housing regularly</li>
+                                        <li>Control flies and mosquitoes</li>
+                                        <li>Avoid herd-level contact</li>
+                                    </ul>
+                                </div>
+                                <div class="medical-section">
+                                    <div class="section-icon">📊</div>
+                                    <h4>Follow-up Monitoring</h4>
+                                    <ul class="checklist">
+                                        <li>Track lesion changes</li>
+                                        <li>Record recovery progress</li>
+                                        <li>Schedule re-evaluation</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                whatMeans.style.display = 'block';
+                meaningText.textContent = 'The detected symptoms strongly match Lumpy Skin Disease patterns observed during model training. Early veterinary intervention can reduce recovery time and prevent herd-level spread.';
+            } else {
+                diseaseInfo.innerHTML = `
+                    <div class="medical-card">
+                        <div class="medical-columns">
+                            <div class="medical-column">
+                                <div class="medical-section">
+                                    <div class="section-icon">🧹</div>
+                                    <h4>General Care</h4>
+                                    <ul class="checklist">
+                                        <li>Maintain clean housing</li>
+                                        <li>Ensure balanced nutrition</li>
+                                        <li>Regular grooming and inspection</li>
+                                    </ul>
+                                </div>
+                                <div class="medical-section">
+                                    <div class="section-icon">📊</div>
+                                    <h4>Monitoring</h4>
+                                    <ul class="checklist">
+                                        <li>Watch for new skin changes</li>
+                                        <li>Maintain vaccination schedule</li>
+                                        <li>Routine vet check-ups</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="medical-column">
+                                <div class="medical-section">
+                                    <div class="section-icon">🩺</div>
+                                    <h4>Preventive Tips</h4>
+                                    <ul class="checklist">
+                                        <li>Good lighting for inspections</li>
+                                        <li>Immediate isolation if symptoms</li>
+                                        <li>Vector control in monsoon</li>
+                                    </ul>
+                                </div>
+                                <div class="medical-section">
+                                    <div class="section-icon">💊</div>
+                                    <h4>When to See Vet</h4>
+                                    <ul class="checklist">
+                                        <li>Persistent fever</li>
+                                        <li>Rapid spread of nodules</li>
+                                        <li>Loss of appetite or milk drop</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                whatMeans.style.display = 'none';
+            }
+        }
+
+        function generatePDF(result) {
+            if (!result) {
+                alert('No results to download');
+                return;
+            }
+
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+
+                doc.setFontSize(22);
+                doc.setTextColor(76, 175, 80);
+                doc.text("Cow Disease Detection Report", 105, 20, { align: "center" });
+
+                doc.setFontSize(12);
+                doc.setTextColor(100);
+                const date = new Date().toLocaleString();
+                doc.text(`Generated on: ${date}`, 20, 30);
+
+                doc.setFontSize(16);
+                doc.setTextColor(0);
+                doc.text("Detection Results", 20, 45);
+
+                doc.setFontSize(14);
+                doc.text(`Disease: ${result.prediction}`, 20, 55);
+                doc.text(`Confidence: ${(result.confidence * 100).toFixed(2)}%`, 20, 65);
+
+                doc.setFontSize(10);
+                doc.setTextColor(100);
+                doc.text("This report was generated automatically by VetCare AI", 105, 280, { align: "center" });
+
+                const filename = `Cow-disease-report-${new Date().toISOString().slice(0,10)}.pdf`;
+                doc.save(filename);
+
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+                alert('Error generating PDF. Please try again.');
+            }
+        }
+    </script>
+    <script src="{{ url_for('static', filename='translations.js') }}"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
